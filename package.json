@@ -4,13 +4,23 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "test-redis": "ts-node src/test-redis.ts",
-    "prepare": "husky"
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest \"src/tests/unit/.*\\.test\\.ts$\"",
+    "test:integration": "jest \"src/tests/integration/.*\\.test\\.ts$\"",
+    "prepare": "husky install"
   },
-  "keywords": [],
+  "keywords": [
+    "otp",
+    "one-time password",
+    "redis",
+    "javascript",
+    "typescript",
+    "node.js"
+  ],
   "author": "David Ajibola",
   "license": "ISC",
-  "description": "Javascript OTP package for generating and verifying one-time passwords(OTP) using Redis for storage. It provides support for different formats of tokens including alphabetic, alphanumeric, and numeric tokens.",
+  "description": "A JavaScript OTP package for generating and verifying one-time passwords (OTP) using Redis.",
   "devDependencies": {
     "@eslint/js": "^9.13.0",
     "@types/jest": "^29.5.14",

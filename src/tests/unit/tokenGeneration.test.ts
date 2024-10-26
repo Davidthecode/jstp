@@ -1,5 +1,5 @@
-import { generateToken } from "../utils/token-generator";
-import { type TokenFormat } from "../types";
+import { generateToken } from "../../utils/token-generator";
+import { type TokenFormat } from "../../types";
 
 describe("Token generation", () => {
   // Test valid formats
