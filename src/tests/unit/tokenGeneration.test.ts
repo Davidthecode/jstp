@@ -2,7 +2,7 @@ import { generateToken } from "../../utils/token-generator";
 import { type TokenFormat } from "../../types";
 
 describe("Token generation", () => {
-  // Test valid formats
+  // Test for valid formats
   test.each([
     ["numeric", 6, /^[0-9]+$/],
     ["alphabetic", 6, /^[A-Z]+$/],
@@ -14,13 +14,13 @@ describe("Token generation", () => {
     expect(token).toMatch(pattern);
   });
 
-  // Test different lengths
+  // Test for different lengths
   test.each([4, 6, 8, 12])("it should generate token of specified length", (length) => {
     const token = generateToken("numeric", length);
     expect(token.length).toBe(length);
   });
 
-  // Test uniqueness
+  // Test for uniqueness
   test("it should generate unique tokens", () => {
     const tokens = new Set();
     for (let i = 0; i < 100; i++) {
@@ -30,7 +30,7 @@ describe("Token generation", () => {
     expect(tokens.size).toBe(100);
   });
 
-  // Test error cases
+  // Test for error cases
   describe("error cases", () => {
     test.each([
       [3, "Length must be between 4 and 12"],
@@ -47,7 +47,7 @@ describe("Token generation", () => {
   });
 
 
-  // Test token composition
+  // Test for token composition
   describe("token composition", () => {
     test("numeric tokens should only contain numbers", () => {
       const token = generateToken("numeric", 6);

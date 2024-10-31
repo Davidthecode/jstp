@@ -1,4 +1,3 @@
-import { getRedisClient } from "./config/redis";
 import { generateToken } from "./utils/token-generator";
 import { OTPConfig } from "./types/index";
 
@@ -6,15 +5,12 @@ const getKey = (prefix: string, identifier: string): string => {
   return `${prefix}${identifier}`;
 };
 
-export const generateOTP = async (
-  config: OTPConfig,
-  identifier: string
-): Promise<string> => {
-  const redis = await getRedisClient();
+export const generateOTP = async (config: OTPConfig): Promise<string> => {
+  const redis = config.redisClient;
   const prefix = config.prefix || "OTP_";
 
   const token = generateToken(config.format, config.length);
-  const key = getKey(prefix, identifier);
+  const key = getKey(prefix, config.identifier);
 
   await redis.set(key, token, {
     EX: config.expiresIn
@@ -25,12 +21,11 @@ export const generateOTP = async (
 
 export const verifyOTP = async (
   config: OTPConfig,
-  identifier: string,
   token: string
 ): Promise<boolean> => {
-  const redis = await getRedisClient();
+  const redis = config.redisClient;
   const prefix = config.prefix || "OTP_";
-  const key = getKey(prefix, identifier);
+  const key = getKey(prefix, config.identifier);
 
   const storedToken = await redis.get(key);
 
@@ -42,13 +37,10 @@ export const verifyOTP = async (
   return true;
 };
 
-export const deleteOTP = async (
-  config: OTPConfig,
-  identifier: string
-): Promise<void> => {
-  const redis = await getRedisClient();
+export const deleteOTP = async (config: OTPConfig): Promise<void> => {
+  const redis = config.redisClient;
   const prefix = config.prefix || "OTP_";
-  const key = getKey(prefix, identifier);
+  const key = getKey(prefix, config.identifier);
 
   await redis.del(key);
 };

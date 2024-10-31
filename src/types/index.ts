@@ -1,3 +1,5 @@
+import { type RedisClientType } from "redis";
+
 export type TokenFormat = "numeric" | "alphabetic" | "alphanumeric";
 
 export interface OTPConfig {
@@ -5,4 +7,6 @@ export interface OTPConfig {
   format: TokenFormat;
   expiresIn: number;
   prefix?: string;
+  identifier: string,
+  redisClient: RedisClientType
 };

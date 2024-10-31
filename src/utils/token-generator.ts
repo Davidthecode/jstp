@@ -59,7 +59,7 @@ const generateAlphanumericToken = (length: number): string => {
     () => ALPHANUMERIC_CHARS.charAt(Math.floor(Math.random() * ALPHANUMERIC_CHARS.length))
   );
 
-  // Combine all characters and shuffle them
+  // this combines all characters and shuffle them
   const token = [...numbers, ...letters, ...remaining]
     .sort(() => Math.random() - 0.5)
     .join("");
