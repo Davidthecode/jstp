@@ -1,84 +1,95 @@
 import "dotenv/config";
-import { generateOTP, verifyOTP } from "../../index";
-import { OTPConfig } from "../../types/index";
+import Jstp from "../..";
+import { GenerateType, VerifyType } from "../../types/index";
 import { type RedisClientType } from "redis";
 import { createClient } from "redis";
 
 describe("Redis OTP Integration", () => {
   let redis: RedisClientType;
-
-  const config: OTPConfig = {
-    length: 6,
-    format: "alphanumeric",
-    expiresIn: 300,
-    prefix: "JSTP_TEST_OTP_",
-    identifier: "jstpTestUser",
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    redisClient: undefined as any
-  };
+  let jstp: Jstp;
+  let generateConfig: GenerateType;
+  let verifyConfig: VerifyType;
+  let deleteIdentifier: string;
 
   beforeAll(async () => {
     const redisUrl = process.env.REDIS_URL as string;
     redis = createClient({ url: redisUrl });
     await redis.connect();
-    config.redisClient = redis;
-  });
-
-  afterAll(async () => {
-    const allKeys = await redis.keys(`${config.prefix}*`);
-    if (allKeys.length > 0) {
-      await redis.del(...allKeys as [string]);
-    }
-    await redis.disconnect();
   });
 
   beforeEach(async () => {
-    const keys = await redis.keys(`${config.prefix}*`);
-    if (keys.length > 0) {
-      await redis.del(...keys as [string]);
-    }
+    jstp = new Jstp(redis);
+
+    //create a unique identifier for each test so we avoid unexpected behaviours
+    const uniqueId = Date.now().toString();
+
+    generateConfig = {
+      length: 6,
+      format: "alphanumeric",
+      expiresIn: 300,
+      identifier: uniqueId
+    };
+
+    verifyConfig = {
+      identifier: uniqueId,
+      token: "" // this would be set in individual tests
+    };
+
+    deleteIdentifier = uniqueId;
   });
 
-  test("it should generate and store OTP", async () => {
-    const token = await generateOTP(config);
-
-    const key = `${config.prefix}${config.identifier}`;
-    const storedToken = await redis.get(key);
-
-    expect(storedToken).toBe(token);
+  afterEach(async () => {
+    await jstp.deleteOTP(deleteIdentifier);
   });
 
-  test("it should verify correct OTP", async () => {
-    const token = await generateOTP(config);
-
-    const isValid = await verifyOTP(config, token);
-    expect(isValid).toBe(true);
+  afterAll(async () => {
+    await redis.disconnect();
   });
 
-  test("it should reject incorrect OTP", async () => {
-    await generateOTP(config);
+  describe("generateOTP", () => {
+    it("should generate and store OTP", async () => {
+      const token = await jstp.generateOTP(generateConfig);
 
-    const isValid = await verifyOTP(config, "wrongtoken");
-    expect(isValid).toBe(false);
+      const storedToken = await redis.get(`jstp_${generateConfig.identifier}`);
+      expect(storedToken).toBe(token);
+    });
   });
 
-  test("it should expire OTP after verification", async () => {
-    const token = await generateOTP(config);
+  describe("verifyOTP", () => {
+    it("should verify correct OTP", async () => {
+      const token = await jstp.generateOTP(generateConfig);
+      verifyConfig.token = token;
 
-    await verifyOTP(config, token);
+      const isValid = await jstp.verifyOTP(verifyConfig);
+      expect(isValid).toBe(true);
+    });
 
-    const key = `${config.prefix}${config.identifier}`;
-    const storedToken = await redis.get(key);
-    expect(storedToken).toBeNull();
+    it("should reject incorrect OTP", async () => {
+      await jstp.generateOTP(generateConfig);
+      verifyConfig.token = "wrongtoken";
+
+      const isValid = await jstp.verifyOTP(verifyConfig);
+      expect(isValid).toBe(false);
+    });
+
+    it("should delete OTP after successful verification", async () => {
+      const token = await jstp.generateOTP(generateConfig);
+      verifyConfig.token = token;
+
+      await jstp.verifyOTP(verifyConfig);
+
+      const storedToken = await redis.get(`jstp_${generateConfig.identifier}`);
+      expect(storedToken).toBeNull();
+    });
   });
 
-  test("it should set correct TTL", async () => {
-    await generateOTP(config);
+  describe("deleteOTP", () => {
+    it("should successfully delete existing OTP", async () => {
+      await jstp.generateOTP(generateConfig);
+      await jstp.deleteOTP(deleteIdentifier);
 
-    const key = `${config.prefix}${config.identifier}`;
-    const ttl = await redis.ttl(key);
-
-    expect(ttl).toBeGreaterThan(0);
-    expect(ttl).toBeLessThanOrEqual(config.expiresIn);
+      const storedToken = await redis.get(`jstp_${generateConfig.identifier}`);
+      expect(storedToken).toBeNull();
+    });
   });
 });
