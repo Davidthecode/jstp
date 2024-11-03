@@ -17,7 +17,7 @@
 ## Installation
 
 ```
-npm install jstp
+npm install @ajiboladavid/jstp
 ```
 
 ## Prerequisites

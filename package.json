@@ -1,5 +1,5 @@
 {
-  "name": "jstp",
+  "name": "@ajiboladavid/jstp",
   "version": "1.0.0",
   "description": "A JavaScript OTP package for generating and verifying one-time passwords (OTP) using Redis for storage.",
   "keywords": [
