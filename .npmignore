@@ -1,0 +1,12 @@
+src/
+tests/
+.github/
+.gitignore
+.eslintrc
+jest.config.mjs
+tsconfig.json
+tsup.config.ts
+coverage/
+.husky/
+*.test.ts
+*.spec.ts
