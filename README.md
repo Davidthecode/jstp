@@ -43,7 +43,7 @@ export const getRedisClient = async() => {
 Create a JSTP instance and generate tokens:
 
 ```ts
-import Jstp from "jstp";
+import Jstp from "@ajiboladavid/jstp";
 import { getRedisClient } from "./redisConfig";
 
 const client = await getRedisClient();
